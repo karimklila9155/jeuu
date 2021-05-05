@@ -1,87 +1,84 @@
-/**
-* @file main.c
-* @brief Testing Program.
-* @author twisted minds
-* @version 0.1
-* @date Apr 26, 2021
-*
-* Testing program for perso animation
-*
-*/
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
-#include <SDL/SDL_mixer.h>
-#include "perso.h"
-void  main(SDL_Surface *ecran)
+#include <SDL/SDL_ttf.h>
+#include "minimap.h"
+
+
+int main()
 {
-    personagee pers;
-
-    SDL_Event event;
-    int continuer=1,i=0,t;
-    int k;
-       //score s;
-
-    SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
-    ecran=SDL_SetVideoMode(1000, 667, 32,SDL_HWSURFACE);
-
-  int recule=0;
-    image img,img1;
-    pers=init_perso();
-    pers=init_perso2();
-    img=init_img("background.jpg",0,0);
-    img1=init_img("vie.png",780,-50);
-//init_score( &s);
-  // afficherscore(&s,ecran  );
-    SDL_EnableKeyRepeat(10,10); 
+TTF_Init();
+SDL_Init(SDL_INIT_VIDEO);
+SDL_Surface *screen , *mask, *perso;
+screen=SDL_SetVideoMode (800,600,32,SDL_HWSURFACE|SDL_DOUBLEBUF);
+SDL_WM_SetCaption("test\t1",NULL);
+temps t;
+minimap m;
+SDL_Rect pos_perso,camera;
+SDL_Event event;
+mask=IMG_Load("mask.png");
+perso=IMG_Load("hero.png");
+init_temps(&t);
+init_map(&m);
+pos_perso.x=0;
+pos_perso.y=0;
+camera.x=0;
+camera.y=0;
+camera.w=800;
+camera.h=600;
+int continuer=1;
+SDL_EnableKeyRepeat(100,10);////
+while(continuer)
+{
     
-    while (continuer)
-    {
-         SDL_PollEvent(&event);
-       switch(event.type)
-          {
-            case SDL_QUIT:
-            continuer= 0;
+while(SDL_PollEvent(&event))
+	{
+
+		switch(event.type)
+		{
+		case SDL_QUIT:
+
+			continuer=0;
+		break;
+		case SDL_KEYDOWN:
+			switch (event.key.keysym.sym)
+			{
+                case SDLK_LEFT:
+                 
+                    if (collision_left(mask,pos_perso)==0)   pos_perso.x-=5;
+                
+                break;
+                case SDLK_RIGHT:
+                   if (collision_right(mask,pos_perso)==0)
+                      pos_perso.x+=5;
+                  
+                break;
+                case SDLK_UP:
+                     if (collision_up(mask,pos_perso)==0)
+                     pos_perso.y-=5;
+                break;  
+                case SDLK_DOWN:
+                if (collision_down(mask,pos_perso)==0)
+                     pos_perso.y+=5;
+                break;  
+
+            }
             break;
-          }
-            i=deplacerperso(&pers,i,&continuer,&recule);
-            i=deplacerperso2(&pers,i,&continuer,&recule);
-           printf("%d\n",recule);
-            if (i==3)
-            {
-            i=0;
-            }
-             SDL_Delay(100);
-//afficherscore(&s,ecran  );
-             display(ecran,img);
-             display(ecran,img1);
-            afficher_perso(ecran,pers,i,pers.positionpersonage,recule);
-            afficher_perso2(ecran,pers,i,pers.positionpersonage,recule);
-         // afficherscore(&s,ecran  );
-            SDL_Flip(ecran);
-           if (pers.positionpersonage.x>800)
-            {
-            pers.positionpersonage.x=0; 
             
-            }
-         if (pers.positionpersonage.y<400)
-         pers.positionpersonage.y=350;
-SDL_Flip(ecran);
-  
-  }    
-
-
-   for(i=0;i<=3;i++)
-    SDL_FreeSurface(pers.personage[i]);
-     for(i=0;i<=3;i++)
-    SDL_FreeSurface(pers.personage1[i]);
+        }
+    }   
+MAJMinimap(pos_perso,&m,camera,20);
+SDL_BlitSurface(mask,NULL,screen,NULL);
+afficherminimap(m,screen);
+SDL_BlitSurface(perso,NULL,screen,&pos_perso);
+afficher_temps(&t,screen);
+SDL_Flip(screen);
+SDL_Delay(50);
 
 }
 
-
-
-
+}
 
 
 
